@@ -24,6 +24,7 @@ Each macro-instruction is decoded into a microcode entry point and executed as a
 ## Documentation
 - [Instruction Set Architecture](docs/isa.md)
 - [Instruction Encoding](docs/encoding.md)
+- [Assertions and System Invariants](docs/assertions.md)
 
 ## Verification Strategy
 
@@ -81,13 +82,15 @@ root
 
 ## Project Status / Roadmap
 
+Completed:
+- ✅ ISA design
+
 Current focus:
-- ISA design
 - Core microcoded execution
 - Assertion-based verification of control and commit semantics
 
 Planned extensions:
 - Expanded instruction set
 - Constrained-random instruction generation
-- Functional coverage
+- SystemVerilog Functional coverage
 - Optional memory wait-state modeling
