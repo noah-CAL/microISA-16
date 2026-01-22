@@ -1,0 +1,7 @@
+output/*
+
+# Vivado
+*.jou
+*.log
+.Xil/
+clockInfo.txt
