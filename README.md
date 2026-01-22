@@ -4,7 +4,7 @@ Microcoded 16-bit CPU with Assertion-Based Verification
 
 ## Overview
 
-This project implements a simple 16-bit CPU using a **microcoded control architecture**, written in SystemVerilog and verified using **assertion-based verification (SVA)** and directed / randomized testbenches.
+This project implements a simple 16-bit CPU using a **microcoded control architecture**, written in SystemVerilog and verified using **assertion-based verification (SystemVerilog Assertions, SVA)** and directed / randomized testbenches.
 
 The primary goal of the project is **verification-focused design**, rather than performance or ISA complexity. The CPU executes one instruction at a time using a microcode ROM and micro-program counter (µPC), making control flow explicit and well-suited for writing strong temporal assertions.
 
@@ -19,7 +19,11 @@ This project is fully self-contained and publishable, and was developed to compl
 - **PC model:** Separate architectural PC and µPC  
 - **Memory model:** Unified instruction/data memory (single-ported in FPGA BRAM)
 
-Each macro-instruction is decoded into a microcode entry point and executed as a sequence of micro-instructions. Architectural state (PC and registers) updates only at explicit instruction commit points.
+Each macro-instruction is decoded into a microcode entry point and executed as a sequence of micro-instructions. Architectural state (PC and registers) updates only at explicit instruction commit points. The ISA is intentionally minimal and designed to support strong, compositional correctness properties.
+
+## Documentation
+- [Instruction Set Architecture](docs/isa.md)
+- [Instruction Encoding](docs/encoding.md)
 
 ## Verification Strategy
 
@@ -42,7 +46,7 @@ Assertions are complemented by testbenches that execute directed and randomized 
 - GNU Make
 - C++ compiler (for Verilator harness)
 
-The simulation flow uses Vivado to preprocess and synthesize the SystemVerilog sources (e.g., memory inference and Xilinx FPGA IP) prior to simulation with Verilator.
+The simulation flow uses Vivado for RTL preprocessing and FPGA-specific inference, followed by cycle-accurate simulation and assertion checking using Verilator.
 
 ### Build and Simulate
 To build and simulate the CPU, run the following commands in the project root directory:
