@@ -18,6 +18,7 @@ This project is fully self-contained and publishable, and was developed to compl
 - **Control:** Microcode ROM + micro-program counter (µPC)  
 - **PC model:** Separate architectural PC and µPC  
 - **Memory model:** Unified instruction/data memory (single-ported in FPGA BRAM)
+- **Trap handling:** Supports precise traps with architectural trap registers (`TRAP`, `TRPC`, `TRH`) for illegal instructions, memory violations, and other architectural exceptions.
 
 Each macro-instruction is decoded into a microcode entry point and executed as a sequence of micro-instructions. Architectural state (PC and registers) updates only at explicit instruction commit points. The ISA is intentionally minimal and designed to support strong, compositional correctness properties.
 
@@ -35,6 +36,7 @@ Key properties enforced using SystemVerilog Assertions include:
 - Exactly one commit per instruction
 - Microcode execution always makes forward progress and terminates
 - Register file writes occur only at commit
+- On traps, no architectural state commits (precise exception guarantee)
 
 Assertions are complemented by testbenches that execute directed and randomized instruction streams and check architectural state at instruction boundaries.
 
@@ -86,11 +88,13 @@ Completed:
 - ✅ ISA design
 
 Current focus:
-- Core microcoded execution
-- Assertion-based verification of control and commit semantics
+- Core microcoded execution + instruction commit semantics
+- Assertion-based verification of control/commit + precise trap behavior
+- Tooling: minimal assembler (labels + encoding) and ISA reference model for testbenches
 
 Planned extensions:
+- Tooling: macro/pseudo-instruction expansion, disassembler, and debug trace format
 - Expanded instruction set
-- Constrained-random instruction generation
-- SystemVerilog Functional coverage
+- Constrained-random instruction generation + self-checking scoreboards
+- SystemVerilog functional coverage
 - Optional memory wait-state modeling
