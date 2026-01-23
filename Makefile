@@ -21,6 +21,29 @@ CHECKPOINTS = output/post_route.dcp \
 CNSTRS      = sources/basys3_main.xdc
 SRCS        = sources/ztop.v
 
+##############
+# Verilator  #
+##############
+VERILATOR = verilator
+VERILATOR_FLAGS = --binary --trace -Wall --timing
+VERILATOR_OUTPUT = build/obj_dir
+VERILATOR_SRC = sources/ztop.sv \
+				sources/fifo.sv
+VERILATOR_TESTS = test/tb_fifo.sv
+VERILATOR_TOP = tb_fifo
+
+sim_fifo:
+	@mkdir -p build
+	@echo "Building simulation..."
+	@$(VERILATOR) $(VERILATOR_FLAGS) \
+		--top-module $(VERILATOR_TOP) \
+		-Mdir build/obj_dir \
+		$(VERILATOR_SRC) $(VERILATOR_TESTS) 2>&1 | bash scripts/colorize.sh
+	@echo "Running simulation..."
+	@./build/obj_dir/V$(VERILATOR_TOP) 2>&1 | bash scripts/colorize.sh
+
+.PHONY: sim_fifo
+
 #####################
 # Building Source   #
 #####################
@@ -31,7 +54,7 @@ test:
 	@echo "TODO: set up Verilator"
 
 clean:
-	rm -f clockInfo.txt logging/*.log logging/*.jou
+	rm -f clockInfo.txt logging/*.log logging/*.jou $(VERILATOR_OUTPUT)/*
 
 clean_all: clean
 	rm -f output/*
