@@ -2,6 +2,31 @@
 
 Each of these invariants is intended to be encoded as SystemVerilog Assertions (SVA) in the RTL implementation to ensure correctness of the CPU design regardless of implementation details.
 
+## Assertions Organization
+Assertions are specific to the current testbench/module/interface and so that they only rely on specific behavior. This is designed so that implementation specifics allowed to change while modifying the appropriate levels of abstraction as confirmed through assertions. 
+
+Example with an SPSC FIFO implementation:
+
+```
+┌─────────────────────────────────────┐
+│   Testbench (tb_fifo.sv)            │  ← End-to-end functional behavior
+│   - Data integrity                  │  ← Cross-module properties
+│   - Ordering guarantees             │
+└─────────────────────────────────────┘
+            ↓ uses
+┌─────────────────────────────────────┐
+│   Module (fifo.sv)                  │  ← Implementation correctness
+│   - Pointer bounds                  │  ← Internal state invariants
+│   - Full/empty logic                │  ← Module-specific rules
+└─────────────────────────────────────┘
+            ↓ implements
+┌─────────────────────────────────────┐
+│   Interface (fifo_if.sv)            │  ← Protocol rules
+│   - Handshake timing                │  ← Implementation-agnostic
+│   - Signal stability                │  ← Reusable across modules
+└─────────────────────────────────────┘
+```
+
 ## Encoding Invariants
 - **INV-ENC-001 (RESERVED field invariant):**  
     All fields marked RESERVED or UNUSED in the instruction encoding must be zero.

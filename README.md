@@ -22,6 +22,8 @@ This project is fully self-contained and publishable, and was developed to compl
 
 Each macro-instruction is decoded into a microcode entry point and executed as a sequence of micro-instructions. Architectural state (PC and registers) updates only at explicit instruction commit points. The ISA is intentionally minimal and designed to support strong, compositional correctness properties.
 
+Architectural correctness is defined solely in terms of architected state (PC, GPRs, and trap CSRs) at instruction boundaries, and all assertions are written against this architectural interface rather than microcode internals.
+
 ## Documentation
 - [Instruction Set Architecture](docs/isa.md)
 - [Instruction Encoding](docs/encoding.md)
@@ -38,7 +40,7 @@ Key properties enforced using SystemVerilog Assertions include:
 - Register file writes occur only at commit
 - On traps, no architectural state commits (precise exception guarantee)
 
-Assertions are complemented by testbenches that execute directed and randomized instruction streams and check architectural state at instruction boundaries.
+Assertions are written with explicit temporal intent (cycle-accurate, non-ambiguous timing) and are treated as executable specifications of the ISA and trap model. They are complemented by testbenches that execute directed and randomized instruction streams and check architectural state at instruction boundaries.
 
 ## How to Run
 
@@ -48,6 +50,7 @@ Assertions are complemented by testbenches that execute directed and randomized 
 - Verilator (used for simulation and assertion checking)
 - GNU Make
 - C++ compiler (for Verilator harness)
+- (Optional) GTKWave (for Waveform viewing)
 
 The simulation flow uses Vivado for RTL preprocessing and FPGA-specific inference, followed by cycle-accurate simulation and assertion checking using Verilator.
 
