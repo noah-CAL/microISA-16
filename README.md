@@ -76,14 +76,24 @@ Programming an Artix-7 FPGA can be done with:
 ## Project Structure
 ```
 root
- ├── docs        // ISA and Architecture Documentation
- │               // and design notes
- ├── output      // Build outputs
- ├── README.md   // You are here!
- ├── scripts     // Synthesis, simulation, and programming scripts
- ├── test        // Testbenches, assertions, and verification code
- └── sources     // RTL source code
+ ├── build/           # Build and simulation outputs
+ ├── source/
+ │   ├── interfaces/  # SystemVerilog interfaces for clean module boundaries
+ │   ├── rtl/         # Synthesizable RTL modules
+ │   ├── packages/    # Shared types, parameters, and constants
+ │   └── top/         # Top-level integration
+ ├── docs/            # Architecture and design documentation
+ ├── scripts/         # Synthesis, simulation, and programming scripts
+ ├── test/            # Testbenches, assertions, and verification code
+ └── README.md        # You are here!
 ```
+
+**Design Principles:**
+- One module per file for maintainability and version control
+- Interfaces for clean module boundaries and reduced port clutter
+- Packages for shared types to ensure consistency
+- Comprehensive inline documentation
+- Assertion-based verification at every level
 
 ## Project Status / Roadmap
 
