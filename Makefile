@@ -15,22 +15,20 @@ BUILD_DIR := build
 
 # Source files
 RTL_SRCS   := $(wildcard $(RTL_DIR)/*.sv)
-PACKAGES   := $(wildcard $(PKG_DIR)/*.sv)
-PACKAGES   += $(wildcard $(PKG_DIR)/*.svh)
+PACKAGES   := $(wildcard $(PKG_DIR)/*.sv) $(wildcard $(PKG_DIR)/*.svh)
 INTERFACES := $(wildcard $(IF_DIR)/*.sv)
 
 TESTS      := $(wildcard $(TEST_DIR)/*.sv)
-SRCS       := $(RTL_SRCS) $(PACKAGES) $(INTERFACES)
+SRCS       := $(PACKAGES) $(INTERFACES) $(RTL_SRCS)
 
 ###################
 # RTL Simulation  #
 ###################
 VIVADO = vivado
 
-VFLAGS := --binary --trace --timing
-VFLAGS += -Wall
-VFLAGS += --assert
-VFLAGS += --coverage
+VFLAGS := --cc --trace --timing
+VFLAGS += -Wall -Wno-UNUSEDSIGNAL
+VFLAGS += --assert --coverage --coverage-line --coverage-toggle
 VFLAGS += -j 0  # Auto-detect CPU cores
 
 VOUTPUT := $(BUILD_DIR)/sims
@@ -39,14 +37,19 @@ VTOP := tb_fifo
 sim_fifo:
 	@mkdir -p build
 	@echo "Building simulation..."
-	$(VERILATOR) $(VFLAGS)  \
-		--top-module $(VTOP) \
-		-Mdir $(VOUTPUT)    \
-		$(SRCS) $(TESTS) 2>&1 | bash scripts/colorize.sh
-	@echo "Running simulation..."
+	@$(VERILATOR) $(VFLAGS) --build                   	 \
+		--top-module $(VTOP) 							 \
+		--exe $(PWD)/test/tb_main.cpp					 \
+		-Mdir $(VOUTPUT)    						  	 \
+		$(SRCS) $(TESTS) 2>&1 | bash scripts/colorize.sh 
+	@echo "Running simulation..." 
 	@$(VOUTPUT)/V$(VTOP) 2>&1 | bash scripts/colorize.sh
 
-.PHONY: sim_fifo
+coverage:
+	@$(VERILATOR)_coverage $(VOUTPUT)/coverage.dat --write-info $(VOUTPUT)/coverage.info
+	@lcov --summary $(VOUTPUT)/coverage.info
+
+.PHONY: sim_fifo coverage
 
 ##########################################
 # FPGA Synthesis & Programming Synthesis #
