@@ -27,6 +27,8 @@ Example with an SPSC FIFO implementation:
 └─────────────────────────────────────┘
 ```
 
+> Note: All temporal assertions are written using $past and implication timing. No ## delays are used to ensure Verilator compatibility.
+
 ## Encoding Invariants
 - **INV-ENC-001 (RESERVED field invariant):**  
     All fields marked RESERVED or UNUSED in the instruction encoding must be zero.

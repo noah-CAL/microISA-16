@@ -5,7 +5,7 @@
 // Features:
 //   - Power-of-2 depth requirement
 //   - Combinational read data
-//   - Registered full/empty flags
+//   - Combinational full/empty flags
 //   - Assertion-based verification
 //==============================================================================
 `include "sources/packages/assert_macros.svh"
@@ -44,7 +44,7 @@ module fifo (
 
   always_ff @(posedge bus.clk) begin
     if (~bus.rst_n) begin
-      mem <= '{default:0};
+      mem[0] <= 'd0;
       r   <= 0;
       w   <= 0;
     end else begin
@@ -59,12 +59,12 @@ module fifo (
   end
 
   always_comb begin
-    bus.full  = (w - r) == FIFO_DEPTH;
+    bus.full  = ((w - r) == FIFO_DEPTH);
     bus.empty = (r == w);
     bus.rd_data = mem[r_idx];
   end
 
-  property fifo_clear_on_reset;
+  property a_fifo_clear_on_reset;
     @(posedge bus.clk)
     $rose(bus.rst_n) |-> (!bus.full
                           && bus.empty
@@ -72,41 +72,41 @@ module fifo (
                           && w == 0);
   endproperty
 
-  property full_blocks_wptr;
-    @(posedge bus.clk)
+  property a_full_blocks_wptr;
+    @(posedge bus.clk) disable iff (!bus.rst_n)
     (bus.wr_en && bus.full) |-> $stable(w);
   endproperty
 
-  property empty_blocks_rptr;
-    @(posedge bus.clk)
+  property a_empty_blocks_rptr;
+    @(posedge bus.clk) disable iff (!bus.rst_n)
     (bus.rd_en && bus.empty) |-> $stable(r);
   endproperty
 
-  property advance_on_read;
+  property a_advance_on_read;
     @(posedge bus.clk) disable iff (!bus.rst_n)
     (bus.rd_en && !bus.empty) |=> !$stable(r);
   endproperty
 
-  property advance_on_write;
+  property a_advance_on_write;
     @(posedge bus.clk) disable iff (!bus.rst_n)
     (bus.wr_en && !bus.full) |=> !$stable(w);
   endproperty
 
-  property fifo_overflow;
+  property a_fifo_overflow;
     @(posedge bus.clk) disable iff (!bus.rst_n)
     occupancy <= FIFO_DEPTH;
   endproperty
 
-  check_fifo_clear_on_reset: assert property (fifo_clear_on_reset) else `ERR("fifo_clear_on_reset");
-  check_full_blocks_wptr: assert property (full_blocks_wptr) else `ERR("full_blocks_wptr");
-  check_empty_blocks_rptr: assert property (empty_blocks_rptr) else `ERR("empty_blocks_rptr");
-  check_advance_on_read: assert property (advance_on_read) else `ERR("advance_on_read");
-  check_advance_on_write: assert property (advance_on_write) else `ERR("advance_on_write");
-  check_fifo_overflow: assert property (fifo_overflow) else `ERR("fifo_overflow");
-  cover property (fifo_clear_on_reset);
-  cover property (full_blocks_wptr);
-  cover property (empty_blocks_rptr);
-  cover property (advance_on_read);
-  cover property (advance_on_write);
-  cover property (fifo_overflow);
+  a_check_fifo_clear_on_reset: assert property (a_fifo_clear_on_reset) else `ERR("fifo_clear_on_reset");
+  a_check_full_blocks_wptr: assert property (a_full_blocks_wptr) else `ERR("full_blocks_wptr");
+  a_check_empty_blocks_rptr: assert property (a_empty_blocks_rptr) else `ERR("empty_blocks_rptr");
+  a_check_advance_on_read: assert property (a_advance_on_read) else `ERR("advance_on_read");
+  a_check_advance_on_write: assert property (a_advance_on_write) else `ERR("advance_on_write");
+  a_check_fifo_overflow: assert property (a_fifo_overflow) else `ERR("fifo_overflow");
+  cover property (a_fifo_clear_on_reset);
+  cover property (a_full_blocks_wptr);
+  cover property (a_empty_blocks_rptr);
+  cover property (a_advance_on_read);
+  cover property (a_advance_on_write);
+  cover property (a_fifo_overflow);
 endmodule

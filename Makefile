@@ -10,7 +10,7 @@ SRC_DIR   := sources
 RTL_DIR   := $(SRC_DIR)/rtl
 IF_DIR    := $(SRC_DIR)/interfaces
 PKG_DIR   := $(SRC_DIR)/packages
-TEST_DIR  := test
+TEST_DIR  := $(SRC_DIR)/test
 BUILD_DIR := build
 
 # Source files
@@ -30,16 +30,17 @@ VFLAGS := --cc --trace --timing
 VFLAGS += -Wall -Wno-UNUSEDSIGNAL
 VFLAGS += --assert --coverage --coverage-line --coverage-toggle
 VFLAGS += -j 0  # Auto-detect CPU cores
-
+VTOP    := tb_fifo
 VOUTPUT := $(BUILD_DIR)/sims
-VTOP := tb_fifo
+TB_MAIN := $(PWD)/$(TEST_DIR)/tb_main.cpp
 
 sim_fifo:
+	@rm -r $(VOUTPUT)
 	@mkdir -p build
 	@echo "Building simulation..."
 	@$(VERILATOR) $(VFLAGS) --build                   	 \
-		--top-module $(VTOP) 							 \
-		--exe $(PWD)/test/tb_main.cpp					 \
+		--top-module tb_fifo 							 \
+		--exe $(TB_MAIN)            					 \
 		-Mdir $(VOUTPUT)    						  	 \
 		$(SRCS) $(TESTS) 2>&1 | bash scripts/colorize.sh 
 	@echo "Running simulation..." 
@@ -80,7 +81,7 @@ program:
 $(RTL_SRCS) $(INTERFACES) $(PACKAGES) $(CONSTRS) $(SRCS) $(CHECKPOINTS) $(BITSTREAM): write_bitstream
 
 clean:
-	rm -f clockInfo.txt logging/*.log logging/*.jou /build/sims/*
+	rm -f clockInfo.txt logging/*.log logging/*.jou build/sims/*
 
 clean_all: clean
 	rm -f output/*

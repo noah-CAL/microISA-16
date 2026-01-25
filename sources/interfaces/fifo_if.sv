@@ -27,17 +27,20 @@ interface fifo_if (
   logic                  empty;
 
   // Producer/Consumer interfaces
-  modport prod (input wr_data, input wr_en, output full, output empty);
-  modport cons (input rd_data, input rd_en, output full, output empty);
+  modport prod (
+    input  clk, rst_n,
+    input  full, empty,
+    output wr_data, wr_en
+  );
+  modport cons (
+    input  clk, rst_n, 
+    input  rd_data, full, empty,
+    output rd_en
+  );
   modport fifo (
-    input  clk, 
-    input  rst_n, 
-    input  wr_en, 
-    input  wr_data, 
-    input  rd_en,
-    output full, 
-    output empty, 
-    output rd_data
+    input  clk, rst_n, 
+    input  wr_en, wr_data, rd_en,
+    output rd_data, full, empty
   );
 
   property full_empty_exclusion;
@@ -47,12 +50,12 @@ interface fifo_if (
 
   property clear_on_reset;
     @(posedge clk) disable iff (!rst_n)
-    $fell(rst_n) |-> ((!full && empty)
-              && rd_data == 0);
+    $rose(rst_n) |-> (!full && empty);
+              
   endproperty
 
-  Full_empty: assert property (full_empty_exclusion) else `ERR("Full empty exclusion");
-  Clear_on: assert property (clear_on_reset) else `ERR("Clear on reset");
+  a_full_empty: assert property (full_empty_exclusion) else `ERR("a_full_empty_exclusion");
+  a_clear_on_reset: assert property (clear_on_reset) else `ERR("a_clear_on_reset");
   cover property (full_empty_exclusion);
   cover property (clear_on_reset);
 endinterface
