@@ -9,21 +9,22 @@
 The FIFO is a synchronous single-clock FIFO with combinational status and read data.
 
 ### Rules
-- A write is accepted on a rising edge when `wr_en && !full`.
-- A read is accepted on a rising edge when `rd_en && !empty`.
-- `wr_en` must only be asserted when `full==0`.
-- `rd_en` must only be asserted when `empty==0`.
-- `rd_data` is invalid when `empty==1`.
-- A read is only considered successful (a "pop") when `rd_en && !empty` at the rising edge.
+- A write is accepted on a rising edge when wr_en && !full (implementation semantics -- see `push_ok` in `fifo_assertions.sv`)
+- A read is accepted on a rising edge when rd_en && !empty (implementation semantics -- see `pop_ok` in `fifo_assertions.sv`).
+- `wr_en` must only be asserted when `full==0`. (FIFO-INV-CTRL-003)
+- `rd_en` must only be asserted when `empty==0`. (FIFO-INV-CTRL-004)
+- `full && empty` must never be true. (FIFO-INV-STAT-001)
+- `rd_data` is invalid when `empty==1` and must not be relied upon. (FIFO-INV-DATA-001 context)
+
 
 ### Show-ahead read data
 `rd_data` is combinational and reflects the current head element (`mem[r_idx]`). When `empty==0`, `rd_data` is valid even if `rd_en==0`. When `empty==1`, `rd_data` is not semantically meaningful and must not be relied upon.
 
 ### Sampling point
-To avoid tool-dependent ordering around rising edges, the FIFO ordering property samples `rd_data` on the falling edge (`negedge clk`). If a pop was accepted on the preceding rising edge, then the sampled data matches the model’s expected head element.
+To avoid tool-dependent ordering around rising edges, the FIFO ordering property samples `rd_data` on the falling edge (`negedge clk`). This is intentional and treated as part of the verification contract for the FIFO.
 
-This is intentional and treated as part of the verification contract for the FIFO.
+If a pop was accepted on the preceding rising edge, the sample `rd_data` on the falling edge immediately preceding the rising edge and must equal the model’s head element (**FIFO-INV-DATA-001**).
 
 ### Reset behavior
-On reset deassertion (`rst_n` rising), the FIFO is empty (`empty==1`), not full (`full==0`), and internal pointers are reset.
+On reset deassertion (`rst_n` rising), the FIFO is empty (`empty==1`), not full (`full==0`), and internal pointers are reset. (**FIFO-INV-RST-001**)
 

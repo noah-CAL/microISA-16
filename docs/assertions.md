@@ -84,7 +84,7 @@ This project targets Verilator as the primary simulation engine. As a result:
 - **INV-INST-005 (Shift amount range):**  
     `imm8[7:4] == 0` for SLLI/SRLI/SRAI instructions.
 
-- **INV-INST-008 (R-type zero-extension):**  
+- **INV-INST-008 (I-type zero-extension):**  
     The immediate value in ANDI/ORI/XORI instructions must be zero-extended to 16 bits.
 
 ## Commit and Control Invariants
@@ -146,3 +146,53 @@ This project targets Verilator as the primary simulation engine. As a result:
 
 - **INV-SW-003 (TRH initialization):**
     If a trap occurs and `TRH == 0`, flag an error.
+
+## FIFO Invariants (Warm-up Component)
+
+These invariants specify the expected black-box behavior of the synchronous FIFO (`sources/rtl/fifo.sv`)
+and are enforced by the checker module (`sources/test/assertions/fifo_assertions.sv`) bound in simulation.
+
+> Note: FIFO invariants use the namespace `FIFO-INV-*` to avoid mixing component specs with μISA-16 architectural invariants.
+
+### FIFO Control/Signal Integrity
+
+- **FIFO-INV-CTRL-001 (No X controls):**
+  `wr_en`, `rd_en`, `full`, and `empty` are never X/Z after reset.
+
+- **FIFO-INV-CTRL-002 (Write data known when writing):**
+  If `wr_en==1`, then `wr_data` must be known (not X/Z).
+
+- **FIFO-INV-CTRL-003 (No push when full):**
+  It is illegal to assert `wr_en` while `full==1`.
+
+- **FIFO-INV-CTRL-004 (No pop when empty):**
+  It is illegal to assert `rd_en` while `empty==1`.
+
+### FIFO Status Correctness
+
+- **FIFO-INV-STAT-001 (Full/empty mutual exclusion):**
+  `full && empty` must never be true.
+
+- **FIFO-INV-STAT-002 (Empty matches occupancy):**
+  `empty == (occupancy == 0)` where occupancy is tracked by the checker.
+
+- **FIFO-INV-STAT-003 (Full matches occupancy):**
+  `full == (occupancy == FIFO_DEPTH)` where occupancy is tracked by the checker.
+
+- **FIFO-INV-STAT-004 (No overflow):**
+  Occupancy must never exceed `FIFO_DEPTH`.
+
+- **FIFO-INV-STAT-005 (No underflow):**
+  Occupancy must never go below 0.
+
+**Implementation note:** The assertion checker mirrors occupancy in a counter rather than asserting on `q.size()` because concurrent assertions of the queue state cause sampling issues in Verilator.
+
+### FIFO Reset
+
+- **FIFO-INV-RST-001 (Reset release state):**
+  Immediately after reset deassertion, `empty==1`, `full==0`, and occupancy is 0.
+
+### FIFO Data Ordering
+
+- **FIFO-INV-DATA-001 (Pop ordering):**
+  If a pop is accepted at a rising edge (`rd_en && !empty`), then the value sampled on the immediately preceding falling edge equals the head value predicted by the checker's reference model.

@@ -37,8 +37,8 @@ package tb_pkg;
     end
   endtask
 
-  task automatic dump_waveforms(string vcd_dump_path, string scope);
+  task automatic dump_waveforms(string vcd_dump_path);
     $dumpfile(vcd_dump_path);
-    $dumpvars(0, scope);
+    $dumpvars(0);
   endtask
 endpackage

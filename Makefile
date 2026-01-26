@@ -45,7 +45,8 @@ SRCS       := $(PACKAGES) $(INTERFACES) $(RTL_SRCS)
 VIVADO = vivado
 
 VFLAGS := --cc --trace --timing
-VFLAGS += -Wall -Wno-UNUSEDSIGNAL
+VFLAGS += -Wall
+# VFLAGS += -Wno-UNUSEDSIGNAL
 VFLAGS += --assert --coverage --coverage-line --coverage-toggle
 VFLAGS += -j 0  # Auto-detect CPU cores
 VTOP    := tb_fifo

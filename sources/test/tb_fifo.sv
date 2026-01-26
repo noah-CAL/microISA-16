@@ -1,19 +1,6 @@
 //==============================================================================
-// μISA-16 -- Microcoded 16-bit CPU with Assertion-Based Verification
-// Copyright (C) 2026  Noah Sedlik
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Noah Sedlik
 //
 // Description: Synchronous FIFO testbench
 // Notes:
@@ -77,7 +64,7 @@ module tb_fifo;
   //----------------------------------------------------------------------------
   // FIFO primitives (blocking until accepted)
   // - Drive wr_en/rd_en on negedge so they are stable before the next posedge.
-  // - Read rd_data in the same cycle rd_en is asserted.
+  // - Read rd_data in the same half-cycle rd_en is asserted (negedge), before the consuming posedge
   //----------------------------------------------------------------------------
   task automatic push_one(input logic [DATA_WIDTH-1:0] data, input int idle_cycles = 0);
     // Wait for space
@@ -160,7 +147,7 @@ module tb_fifo;
       pop_one(data, 0);
       if (data != test_data[i]) begin
         tb_log($sformatf("Expected received data == test_data (exp 0x%0h, got 0x%0h", 
-          test_data[i], data[i]), tb_pkg::FATAL);
+          test_data[i], data), tb_pkg::FATAL);
       end
     end
     pop_one(data, 0);
@@ -219,7 +206,7 @@ module tb_fifo;
   // Testing Utils
   //----------------------------------------------------------------------------
   initial begin
-    tb_pkg::dump_waveforms("build/sims/tb_fifo.vcd", "tb_fifo");
+    tb_pkg::dump_waveforms("build/sims/tb_fifo.vcd");
     tb_pkg::timeout_countdown(bus.clk);
   end
 endmodule

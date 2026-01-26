@@ -18,7 +18,7 @@ module fifo (
   localparam POINTER_WIDTH = $clog2(FIFO_DEPTH);
 
   // Declare BRAM memory
-  logic [DATA_WIDTH-1:0] mem [FIFO_DEPTH];
+  logic [DATA_WIDTH-1:0] mem [0:FIFO_DEPTH-1];
 
   // Read/Write pointers intentionally larger than FIFO_DEPTH
   logic [POINTER_WIDTH:0] r;
