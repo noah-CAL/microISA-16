@@ -1,6 +1,7 @@
 # Synchronous FIFO Module `sources/rtl/fifo.sv`
 
 > SPDX-License-Identifier: AGPL-3.0-or-later
+>
 > Copyright (C) 2026 Noah Sedlik
 
 ## FIFO Protocol and Sampling Semantics (Warm-up Component)

@@ -1,6 +1,7 @@
 # μISA-16 Instruction Set Architecture (v1)
 
 > SPDX-License-Identifier: AGPL-3.0-or-later
+>
 > Copyright (C) 2026 Noah Sedlik 
 
 ## Architectural Overview

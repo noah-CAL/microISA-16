@@ -1,6 +1,7 @@
 # μISA-16 Assertions and Invariants (v1)
 
 > SPDX-License-Identifier: AGPL-3.0-or-later
+>
 > Copyright (C) 2026 Noah Sedlik
 
 Each of these invariants is intended to be encoded as SystemVerilog Assertions (SVA) in the RTL implementation to ensure correctness of the CPU design regardless of implementation details.
