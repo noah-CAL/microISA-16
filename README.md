@@ -1,3 +1,9 @@
+<!-- TODO: CI pipeline with coverage check? -->
+![Status](https://img.shields.io/badge/status-in%20progress-informational)
+![Focus](https://img.shields.io/badge/focus-assertion--based%20verification-blue)
+![Tooling](https://img.shields.io/badge/simulator-Verilator-lightgrey)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-orange)](LICENSE)
+
 # μISA-16
 
 Microcoded 16-bit CPU with Assertion-Based Verification
