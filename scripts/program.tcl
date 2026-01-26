@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Noah Sedlik
+#
 # program.tcl
 # 
 # Opens the HW manager and programs the connected 

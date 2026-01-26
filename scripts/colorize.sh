@@ -1,6 +1,9 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Noah Sedlik
+#
 # Color output filter
-
+#
 RED='\033[0;31m'
 ORANGE='\033[0;33m'
 YELLOW='\033[1;33m'

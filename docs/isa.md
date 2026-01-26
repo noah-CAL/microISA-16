@@ -1,5 +1,8 @@
 # μISA-16 Instruction Set Architecture (v1)
 
+> SPDX-License-Identifier: AGPL-3.0-or-later
+> Copyright (C) 2026 Noah Sedlik 
+
 ## Architectural Overview
 
 - **Word size:** 16 bits (2 bytes)
@@ -7,7 +10,7 @@
 - **Registers:** 8 general-purpose registers (`R0–R7`) and trap handler registers `TRAP`, `TRPC`, and `TRH`
   - `R0` is hardwired to 0
   - `R1–R5` are general-purpose
-  - `R6` is return address pointer by convention
+  - `R6` is return address register by convention
   - `R7` is stack pointer by convention
   - `TRAP` is a special register that latches for illegal opcodes or memory access violations. See S-type instructions.
 - **Control state:** 

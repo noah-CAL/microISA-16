@@ -1,33 +1,42 @@
 # μISA-16 Assertions and Invariants (v1)
 
+> SPDX-License-Identifier: AGPL-3.0-or-later
+> Copyright (C) 2026 Noah Sedlik
+
 Each of these invariants is intended to be encoded as SystemVerilog Assertions (SVA) in the RTL implementation to ensure correctness of the CPU design regardless of implementation details.
 
 ## Assertions Organization
 Assertions are specific to the current testbench/module/interface and so that they only rely on specific behavior. This is designed so that implementation specifics allowed to change while modifying the appropriate levels of abstraction as confirmed through assertions. 
 
-Example with an SPSC FIFO implementation:
+Example with an SPSC FIFO implementation (current repo style):
 
 ```
 ┌─────────────────────────────────────┐
-│   Testbench (tb_fifo.sv)            │  ← End-to-end functional behavior
-│   - Data integrity                  │  ← Cross-module properties
-│   - Ordering guarantees             │
+│ Testbench (tb_fifo.sv)              │ ← Directed tests + end-to-end checks
+│ - Push/pop sequences                │
+│ - Data integrity checks             │
 └─────────────────────────────────────┘
-            ↓ uses
+                ↓ drives
 ┌─────────────────────────────────────┐
-│   Module (fifo.sv)                  │  ← Implementation correctness
-│   - Pointer bounds                  │  ← Internal state invariants
-│   - Full/empty logic                │  ← Module-specific rules
+│ RTL (fifo.sv)                       │ ← Synthesizable DUT (assertion-free)
 └─────────────────────────────────────┘
-            ↓ implements
+                ↑ bound in simulation
 ┌─────────────────────────────────────┐
-│   Interface (fifo_if.sv)            │  ← Protocol rules
-│   - Handshake timing                │  ← Implementation-agnostic
-│   - Signal stability                │  ← Reusable across modules
+│ Checker (fifo_assertions.sv)        │ ← Protocol + black-box functional SVA
+│ Bind (bind_fifo.sv)                 │ ← Attach checkers using bind
 └─────────────────────────────────────┘
 ```
+The intent is to keep synthesizable RTL clean while keeping verification properties reusable and tool-friendly.
 
-> Note: All temporal assertions are written using $past and implication timing. No ## delays are used to ensure Verilator compatibility.
+> Note: No ##N SVA delays are used to ensure Verilator compatibility. Procedural #(time) delays exist in testbench / simulation-only non-SVA components.
+
+## Verilator-Compatible SVA
+
+This project targets Verilator as the primary simulation engine. As a result:
+
+- No `##N` SVA delays are used as it is unsupported in Verilator. Temporal relationships are expressed using `$past()` and explicit state variables.
+- Checkers avoid concurrent assertions that reference mutable dynamic objects (e.g. `queue.size()`) which caused problems starting with `tb_fifo.sv`. Values are instead captured procedurally and/or mirrored in a stable reference counter.
+- Synthesizable RTL is assertion-free. Assertions live in checker modules compiled only for simulation and attached via `bind`.
 
 ## Encoding Invariants
 - **INV-ENC-001 (RESERVED field invariant):**  

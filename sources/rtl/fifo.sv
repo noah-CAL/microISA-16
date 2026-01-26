@@ -1,4 +1,5 @@
 //==============================================================================
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Noah Sedlik
 // 
 // Description: Synchronous FIFO with configurable width and depth
@@ -8,8 +9,6 @@
 //   - Combinational full/empty flags
 //   - Assertion-based verification
 //==============================================================================
-`include "sources/packages/assert_macros.svh"
-
 import fifo_pkg::FIFO_DEPTH;
 import fifo_pkg::DATA_WIDTH;
 
@@ -26,11 +25,9 @@ module fifo (
   logic [POINTER_WIDTH:0] w;
   logic [POINTER_WIDTH-1:0] r_idx;
   logic [POINTER_WIDTH-1:0] w_idx;
-  logic [POINTER_WIDTH:0] occupancy;
 
   assign r_idx = r[POINTER_WIDTH-1:0];
   assign w_idx = w[POINTER_WIDTH-1:0];
-  assign occupancy = (w - r);
 
   // Compile-time checks
   initial begin : fifo_compile_time_checks
@@ -44,7 +41,6 @@ module fifo (
 
   always_ff @(posedge bus.clk) begin
     if (~bus.rst_n) begin
-      mem[0] <= 'd0;
       r   <= 0;
       w   <= 0;
     end else begin
@@ -63,57 +59,4 @@ module fifo (
     bus.empty = (r == w);
     bus.rd_data = mem[r_idx];
   end
-
-  property a_fifo_clear_on_reset;
-    @(posedge bus.clk)
-    $rose(bus.rst_n) |-> (!bus.full
-                          && bus.empty
-                          && r == 0
-                          && w == 0);
-  endproperty
-
-  property a_full_blocks_wptr;
-    @(posedge bus.clk) disable iff (!bus.rst_n)
-    (bus.wr_en && bus.full) |-> $stable(w);
-  endproperty
-
-  property a_empty_blocks_rptr;
-    @(posedge bus.clk) disable iff (!bus.rst_n)
-    (bus.rd_en && bus.empty) |-> $stable(r);
-  endproperty
-
-  property a_advance_on_read;
-    @(posedge bus.clk) disable iff (!bus.rst_n)
-    (bus.rd_en && !bus.empty) |=> !$stable(r);
-  endproperty
-
-  property a_advance_on_write;
-    @(posedge bus.clk) disable iff (!bus.rst_n)
-    (bus.wr_en && !bus.full) |=> !$stable(w);
-  endproperty
-
-  property a_fifo_overflow;
-    @(posedge bus.clk) disable iff (!bus.rst_n)
-    occupancy <= FIFO_DEPTH;
-  endproperty
-
-  property a_clear_on_reset;
-    @(posedge bus.clk) disable iff (!bus.rst_n)
-    $rose(bus.rst_n) |-> (!bus.full && bus.empty);
-  endproperty
-
-  a_check_fifo_clear_on_reset: assert property (a_fifo_clear_on_reset) else `ERR("fifo_clear_on_reset");
-  a_check_full_blocks_wptr: assert property (a_full_blocks_wptr) else `ERR("full_blocks_wptr");
-  a_check_empty_blocks_rptr: assert property (a_empty_blocks_rptr) else `ERR("empty_blocks_rptr");
-  a_check_advance_on_read: assert property (a_advance_on_read) else `ERR("advance_on_read");
-  a_check_advance_on_write: assert property (a_advance_on_write) else `ERR("advance_on_write");
-  a_check_fifo_overflow: assert property (a_fifo_overflow) else `ERR("fifo_overflow");
-  a_check_clear_on_reset: assert property (a_clear_on_reset) else `ERR("a_clear_on_reset");
-  cover property (a_fifo_clear_on_reset);
-  cover property (a_full_blocks_wptr);
-  cover property (a_empty_blocks_rptr);
-  cover property (a_advance_on_read);
-  cover property (a_advance_on_write);
-  cover property (a_fifo_overflow);
-  cover property (a_clear_on_reset);
 endmodule

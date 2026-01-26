@@ -1,5 +1,19 @@
 //==============================================================================
-// Copyright (C) 2026 Noah Sedlik
+// μISA-16 -- Microcoded 16-bit CPU with Assertion-Based Verification
+// Copyright (C) 2026  Noah Sedlik
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 // Description: Synchronous FIFO testbench
 // Notes:
@@ -9,10 +23,9 @@
 `define ARRAY_SIZE (fifo_pkg::FIFO_DEPTH << 1)
 
 module tb_fifo;
-  localparam int CLK_PERIOD = 10;
-
   import fifo_pkg::DATA_WIDTH;
   import fifo_pkg::FIFO_DEPTH;
+  import fifo_pkg::CLK_PERIOD;
 
   import tb_pkg::TIMEOUT_CYCLES;
   import tb_pkg::tb_log;
@@ -62,7 +75,9 @@ module tb_fifo;
   endtask
 
   //----------------------------------------------------------------------------
-  // Single-beat FIFO primitives (blocking until accepted)
+  // FIFO primitives (blocking until accepted)
+  // - Drive wr_en/rd_en on negedge so they are stable before the next posedge.
+  // - Read rd_data in the same cycle rd_en is asserted.
   //----------------------------------------------------------------------------
   task automatic push_one(input logic [DATA_WIDTH-1:0] data, input int idle_cycles = 0);
     // Wait for space
@@ -107,7 +122,7 @@ module tb_fifo;
 
       if (received_data[i] != test_data[i]) begin
         tb_log($sformatf("Expected received data == test_data (exp 0x%0h, got 0x%0h", 
-          received_data[i], test_data[i]), tb_pkg::FATAL);
+          test_data[i], received_data[i]), tb_pkg::FATAL);
       end
     end
 
@@ -145,7 +160,7 @@ module tb_fifo;
       pop_one(data, 0);
       if (data != test_data[i]) begin
         tb_log($sformatf("Expected received data == test_data (exp 0x%0h, got 0x%0h", 
-          received_data[i], test_data[i]), tb_pkg::FATAL);
+          test_data[i], data[i]), tb_pkg::FATAL);
       end
     end
     pop_one(data, 0);

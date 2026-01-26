@@ -1,5 +1,8 @@
 # μISA-16 ISA Encoding (v1)
 
+> SPDX-License-Identifier: AGPL-3.0-or-later
+> Copyright (C) 2026 Noah Sedlik
+
 ## Encoding Summary
 - All fields marked RESERVED or UNUSED must be encoded as zero.
 - Illegal instructions (unrecognized opcodes or non-zero RESERVED fields) cause a precise trap (see [/docs/isa.md](/docs/isa.md)).
@@ -21,7 +24,7 @@ Notes:
 - In M-type, dir = 0 → load, dir = 1 → store.
 
 ### R-type Instructions (`opcode == 0x0`)
-| Instruction | Opcode` [15:12]` | `[11:9]` | `[8:6]` | `[5:3]` | `[2:0]` |
+| Instruction | `Opcode [15:12]` | `[11:9]` | `[8:6]` | `[5:3]` | `[2:0]` |
 | ----------- | ---------------- | -------- | ------- | ------- | ------- |
 | `add`       | `0000`           | `rd`     | `rs1`   | `rs2`   | `000`   |
 | `and`       | `0000`           | `rd`     | `rs1`   | `rs2`   | `001`   |

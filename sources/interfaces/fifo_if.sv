@@ -1,12 +1,11 @@
 //==============================================================================
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Noah Sedlik
 // 
 // Module: fifo_if
 // Description: FIFO protocol interface defining signals and modports for
 //              synchronous FIFO communication between producer and consumer
 //==============================================================================
-`include "sources/packages/assert_macros.svh"
-
 import fifo_pkg::DATA_WIDTH;
 
 interface fifo_if (
@@ -41,19 +40,4 @@ interface fifo_if (
     input  wr_en, wr_data, rd_en,
     output rd_data, full, empty
   );
-
-  property full_empty_exclusion;
-    @(posedge clk) disable iff (!rst_n)
-    !(full && empty);
-  endproperty
-
-  property valid_ctrl_signals;
-    @(posedge clk) disable iff (!rst_n)
-    ~($isunknown(wr_en) || $isunknown(rd_en) || $isunknown(full) || $isunknown(empty));
-  endproperty
-
-  a_full_empty: assert property (full_empty_exclusion) else `ERR("a_full_empty_exclusion");
-  a_valid_ctrl_signals: assert property (valid_ctrl_signals) else `ERR("a_valid_ctrl_signals");
-  cover property (full_empty_exclusion);
-  cover property (valid_ctrl_signals);
 endinterface

@@ -28,6 +28,7 @@ Architectural correctness is defined solely in terms of architected state (PC, G
 - [Instruction Set Architecture](docs/isa.md)
 - [Instruction Encoding](docs/encoding.md)
 - [Assertions and System Invariants](docs/assertions.md)
+- [FIFO Module Contract](docs/modules/fifo.md)
 
 ## Verification Strategy
 
@@ -76,16 +77,19 @@ Programming an Artix-7 FPGA can be done with:
 ## Project Structure
 ```
 root
- ├── build/           # Build and simulation outputs
- ├── source/
- │   ├── interfaces/  # SystemVerilog interfaces for clean module boundaries
- │   ├── rtl/         # Synthesizable RTL modules
- │   ├── packages/    # Shared types, parameters, and constants
- │   └── top/         # Top-level integration
- ├── docs/            # Architecture and design documentation
- ├── scripts/         # Synthesis, simulation, and programming scripts
- ├── test/            # Testbenches, assertions, and verification code
- └── README.md        # You are here!
+ ├── build/                 # Build and simulation outputs
+ ├── sources/
+ │   ├── interfaces/        # SystemVerilog interfaces for clean module boundaries
+ │   ├── rtl/               # Synthesizable RTL modules (assertion-free)
+ │   ├── packages/          # Shared types, parameters, and constants
+ │   ├── test/              
+ │       ├── assertions/    # Simulation-only assertion modules
+ │       ├── bind/          # Simulation-only bind statements
+ │       ...        
+ │       └── tb_fifo.sv     # Directed testbench(s)
+ ├── docs/                  # Architecture, design, and module documentation
+ ├── scripts/               # Synthesis, simulation, and programming scripts
+ └── README.md              # You are here!
 ```
 
 **Design Principles:**
@@ -99,6 +103,7 @@ root
 
 Completed:
 - ✅ ISA design
+- ✅ FIFO Verification
 
 Current focus:
 - Core microcoded execution + instruction commit semantics
@@ -111,3 +116,42 @@ Planned extensions:
 - Constrained-random instruction generation + self-checking scoreboards
 - SystemVerilog functional coverage
 - Optional memory wait-state modeling
+
+## Verification Showcase: FIFO (Warm-up Component)
+
+Before progressing to the CPU core, this repo includes a synchronous FIFO used to establish project “house style” for
+SystemVerilog + Verilator-compatible assertion-based verification:
+
+- Synthesizable RTL is kept assertion-free (`sources/rtl/fifo.sv`)
+- Protocol and functional invariants are encoded in a single, unified assertions module (`sources/test/assertions/fifo_assertions.sv`)
+- Assertions are attached using `bind` statements compiled only in simulation (`sources/test/bind/bind_fifo.sv`)
+- Verilator constraints are respected (i.e. no `##N` SVA delays)
+
+The FIFO checker includes:
+- Control/status X-checks
+- Full/empty mutual exclusion and occupancy consistency (via a reference counter)
+- Ordering check using a simulation-only SV queue and an explicit data sampling point (negedge)
+
+## License
+This project is licensed under the GNU Affero General Public License v3.0. If you distribute or deploy a modified version of this software, you must make the corresponding source code available under the same license.
+
+See [LICENSE](LICENSE) for details.
+
+---
+
+> μISA-16 -- Microcoded 16-bit CPU with Assertion-Based Verification
+
+> Copyright (C) 2026  Noah Sedlik
+
+> This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+> This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+> You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.

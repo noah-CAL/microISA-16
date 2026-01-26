@@ -1,4 +1,5 @@
 //==============================================================================
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Noah Sedlik
 // 
 // Description: Package for testbench utility functions
@@ -15,13 +16,13 @@ package tb_pkg;
 
   task automatic tb_log(string msg, level_t level);
     unique case (level)
-    INFO:  $display("[%0t] INFO : %s", $time, msg);
-    ERROR: $display("[%0t] ERROR : %s", $time, msg);
+    INFO:  $display("[%0t] [TESTBENCH] INFO : %s", $time, msg);
+    ERROR: $display("[%0t] [TESTBENCH] ERROR : %s", $time, msg);
     FATAL: begin
-      $display("[%0t] FATAL: %s", $time, msg);
+      $display("[%0t] [TESTBENCH] FATAL: %s", $time, msg);
       $finish;
     end
-    SUCCESS: $display("[%0t] SUCCESS : %s", $time, msg);
+    SUCCESS: $display("[%0t] [TESTBENCH] SUCCESS : %s", $time, msg);
     endcase
   endtask
 
@@ -30,7 +31,7 @@ package tb_pkg;
     forever @(posedge clk) begin : timeout_watchdog
       timeout++;
       if (timeout >= TIMEOUT_CYCLES) begin
-        $display("[%2t] ERROR: Timeout reached (%0d cycles)", $time, TIMEOUT_CYCLES);
+        $display("[%0t] [TESTBENCH] ERROR: Timeout reached (%0d cycles)", $time, TIMEOUT_CYCLES);
         $finish;
       end
     end
