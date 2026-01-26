@@ -9,7 +9,6 @@
 
 import fifo_pkg::DATA_WIDTH;
 
-/** FIFO Interface - defines the protocol between producer and consumer */
 interface fifo_if (
   input clk, 
   input rst_n
@@ -48,14 +47,13 @@ interface fifo_if (
     !(full && empty);
   endproperty
 
-  property clear_on_reset;
+  property valid_ctrl_signals;
     @(posedge clk) disable iff (!rst_n)
-    $rose(rst_n) |-> (!full && empty);
-              
+    ~($isunknown(wr_en) || $isunknown(rd_en) || $isunknown(full) || $isunknown(empty));
   endproperty
 
   a_full_empty: assert property (full_empty_exclusion) else `ERR("a_full_empty_exclusion");
-  a_clear_on_reset: assert property (clear_on_reset) else `ERR("a_clear_on_reset");
+  a_valid_ctrl_signals: assert property (valid_ctrl_signals) else `ERR("a_valid_ctrl_signals");
   cover property (full_empty_exclusion);
-  cover property (clear_on_reset);
+  cover property (valid_ctrl_signals);
 endinterface

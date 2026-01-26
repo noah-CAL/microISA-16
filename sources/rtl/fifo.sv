@@ -97,16 +97,23 @@ module fifo (
     occupancy <= FIFO_DEPTH;
   endproperty
 
+  property a_clear_on_reset;
+    @(posedge bus.clk) disable iff (!bus.rst_n)
+    $rose(bus.rst_n) |-> (!bus.full && bus.empty);
+  endproperty
+
   a_check_fifo_clear_on_reset: assert property (a_fifo_clear_on_reset) else `ERR("fifo_clear_on_reset");
   a_check_full_blocks_wptr: assert property (a_full_blocks_wptr) else `ERR("full_blocks_wptr");
   a_check_empty_blocks_rptr: assert property (a_empty_blocks_rptr) else `ERR("empty_blocks_rptr");
   a_check_advance_on_read: assert property (a_advance_on_read) else `ERR("advance_on_read");
   a_check_advance_on_write: assert property (a_advance_on_write) else `ERR("advance_on_write");
   a_check_fifo_overflow: assert property (a_fifo_overflow) else `ERR("fifo_overflow");
+  a_check_clear_on_reset: assert property (a_clear_on_reset) else `ERR("a_clear_on_reset");
   cover property (a_fifo_clear_on_reset);
   cover property (a_full_blocks_wptr);
   cover property (a_empty_blocks_rptr);
   cover property (a_advance_on_read);
   cover property (a_advance_on_write);
   cover property (a_fifo_overflow);
+  cover property (a_clear_on_reset);
 endmodule
