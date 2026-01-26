@@ -35,7 +35,6 @@ VOUTPUT := $(BUILD_DIR)/sims
 TB_MAIN := $(PWD)/$(TEST_DIR)/tb_main.cpp
 
 sim_fifo:
-	@rm -r $(VOUTPUT)
 	@mkdir -p build
 	@echo "Building simulation..."
 	@$(VERILATOR) $(VFLAGS) --build                   	 \
@@ -47,6 +46,9 @@ sim_fifo:
 	@$(VOUTPUT)/V$(VTOP) 2>&1 | bash scripts/colorize.sh
 
 coverage:
+	@mkdir -p $(BUILD_DIR)/coverage/
+	@$(VERILATOR)_coverage $(VOUTPUT)/coverage.dat --write $(BUILD_DIR)/coverage/
+	@echo "Writing coverage results to $(BUILD_DIR)/coverage/"
 	@$(VERILATOR)_coverage $(VOUTPUT)/coverage.dat --write-info $(VOUTPUT)/coverage.info
 	@lcov --summary $(VOUTPUT)/coverage.info
 
