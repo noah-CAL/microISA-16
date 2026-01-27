@@ -5,12 +5,13 @@
 // Description: CPU package defining structs and constants
 //==============================================================================
 package cpu_pkg;
-  //----------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // Global parameters
   //----------------------------------------------------------------------------
-  localparam int unsigned WORD_W    = 16;
-  localparam int unsigned GPR_N     = 8;
-  localparam int unsigned GPR_AW    = $clog2(GPR_N);
+  localparam int unsigned WORD_W     = 16;
+  localparam int unsigned GPR_N      = 8;
+  localparam int unsigned GPR_AW     = $clog2(GPR_N);
+  localparam logic [WORD_W-1:0] PC_DEFAULT = '0;
 
   //----------------------------------------------------------------------------
   // Trap codes

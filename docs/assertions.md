@@ -39,13 +39,16 @@ This project targets Verilator as the primary simulation engine. As a result:
 - Checkers avoid concurrent assertions that reference mutable dynamic objects (e.g. `queue.size()`) which caused problems starting with `tb_fifo.sv`. Values are instead captured procedurally and/or mirrored in a stable reference counter.
 - Synthesizable RTL is assertion-free. Assertions live in checker modules compiled only for simulation and attached via `bind`.
 
-## Encoding Invariants
+## Encoding/Decoding Invariants
 - **INV-ENC-001 (RESERVED field invariant):**  
     All fields marked RESERVED or UNUSED in the instruction encoding must be zero.
 
 - **INV-ENC-002 (Illegal instruction handling):**  
     Any illegal instruction encoding (unrecognized opcode or non-zero RESERVED/UNUSED fields) must raise a precise trap:
     `TRAP ← 0x01, TRPC ← PC + 1`, and `PC ← TRH`, and the faulting instruction must not modify architectural state (GPRs, memory, flags).
+
+- **INV-DEC-001 (Decode field consistency):** 
+    When `decode.ir_valid==1`, exported fields (`opcode, rd, rs1, rs2, imm8`) must equal the corresponding slices of `decode.ir`
 
 
 ## Architectural Invariants
@@ -88,18 +91,20 @@ This project targets Verilator as the primary simulation engine. As a result:
     The immediate value in ANDI/ORI/XORI instructions must be zero-extended to 16 bits.
 
 ## Commit and Control Invariants
-- **INV-COMMIT-001 (Single commit per instruction):**
-    Each macro-instruction causes exactly one architectural commit event, or a trap event, but not both.
+- **INV-COMMIT-000 (Architectural boundary):**
+    `commit.valid` is a one-cycle pulse that marks the _only_ cycle where architectural state is allowed to change. If `commit.valid==0`, architectural state (PC, GPCRs, flags, traps, ...) must be stable.
 
-- **INV-COMMIT-002 (Architectural state changes only at commit or trap):**
-    GPR writes, PC updates, memory writes, flag updates, and special-register updates (`TRAP/TRPC/TRH`) occur only at 
-        (a) commit boundaries or 
-        (b) trap entry/CRT as defined by the ISA.
+- **INV-COMMIT-001 (Commit is a pulse):**
+    `commit.valid` must not be high in two consecutive cycles.
+
+- **INV-COMMIT-002 (State change gating):**
+    If `commit.valid==0`, architected state must be stable.
 
 - **INV-COMMIT-003 (PC update exclusivity):**
-    On any cycle where `PC` changes, the change must be attributable to exactly one of:
-        (a) Sequential commit (`PC_next = PC + 1`), 
-        (b) Branch taken, jump, `jalr`, trap entry (`PC_next = TRH`), or `CRT` (`PC_next = TRPC`).
+    On `commit.valid`, `PC` must change (at minimum by `+1`, or to a control-flow target).
+
+- **INV-COMMIT-004 (TRAP encoding consistency):**
+    If `commit.is_trap==0`, then `commit.trap_code==TR_NONE` and `arch.csr.TRAP==TR_NONE`.
 
 ## Special Register Invariants (S-type)
 - **INV-SREG-001 (SR semantics):**
@@ -132,12 +137,18 @@ This project targets Verilator as the primary simulation engine. As a result:
 ## Microarchitectural Invariants (White-box Specifics)
 - **INV-UOP-001 (Bounded completion):**
     Each instruction completes (commit or trap) within `N=10` cycles.
+
 - **INV-UOP-002 (uPC validity):**
     uPC must always remain within the valid instructions of microcode ROM.
+
 - **INV-UOP-003 (Fetch/execute separation):**
     Instruction register (IR) is only updated during fetch and remains stable until commit/trap.
+
 - **INV-UOP-004 (Memory Read/Write flags):**  
     Exactly one of `mem_wr_en` or `mem_rd_en` can be true at the same time. Only one memory read or one memory write can take place at once.
+
+- **INV-UOP-005 (Signal integrity):**  
+    No `X` on `commit.valid, commit.is_trap, arch.csr.PC, arch.csr.TRAP, ...`
 
 ## Debug (simulation-only) assertions
 - **INV-SW-001 (SP alignment):**  

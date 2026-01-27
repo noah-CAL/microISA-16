@@ -25,4 +25,8 @@ interface cpu_if (
     input  clk, rst_n,
     output arch, commit, decode, debug
   );
+
+  modport testing (
+    input clk, rst_n, arch, commit, decode, debug
+  );
 endinterface
