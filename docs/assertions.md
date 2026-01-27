@@ -129,13 +129,15 @@ This project targets Verilator as the primary simulation engine. As a result:
 - **INV-TRAP-004 (`TRAP` clearing):**
     If a call to is made `CRT`, `TRAP` must be reset to `0x00`.
 
-## Microcode Invariants
+## Microarchitectural Invariants (White-box Specifics)
 - **INV-UOP-001 (Bounded completion):**
     Each instruction completes (commit or trap) within `N=10` cycles.
 - **INV-UOP-002 (uPC validity):**
     uPC must always remain within the valid instructions of microcode ROM.
 - **INV-UOP-003 (Fetch/execute separation):**
     Instruction register (IR) is only updated during fetch and remains stable until commit/trap.
+- **INV-UOP-004 (Memory Read/Write flags):**  
+    Exactly one of `mem_wr_en` or `mem_rd_en` can be true at the same time. Only one memory read or one memory write can take place at once.
 
 ## Debug (simulation-only) assertions
 - **INV-SW-001 (SP alignment):**  

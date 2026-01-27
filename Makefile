@@ -46,7 +46,7 @@ VIVADO = vivado
 
 VFLAGS := --cc --trace --timing
 VFLAGS += -Wall
-# VFLAGS += -Wno-UNUSEDSIGNAL
+VFLAGS += -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 VFLAGS += --assert --coverage --coverage-line --coverage-toggle
 VFLAGS += -j 0  # Auto-detect CPU cores
 VTOP    := tb_fifo
