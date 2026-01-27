@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 default:
-	@echo "USAGE: make [build, test, write_bitstream, program, check_connectivity, clean, clean_all]"
+	@echo "USAGE: make [build, sim_fifo, sim_cpu, write_bitstream, program, check_connectivity, clean, clean_all]"
 
 # Tools
 VIVADO = vivado
@@ -48,21 +48,31 @@ VFLAGS := --cc --trace --timing
 VFLAGS += -Wall
 VFLAGS += -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 VFLAGS += --assert --coverage --coverage-line --coverage-toggle
-VFLAGS += -j 0  # Auto-detect CPU cores
-VTOP    := tb_fifo
+VFLAGS += -j 0
+
 VOUTPUT := $(BUILD_DIR)/sims
 TB_MAIN := $(PWD)/$(TEST_DIR)/tb_main.cpp
 
+# A helper function to build/run a selected TB top
+define verilate_and_run
+	@rm -r $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
+	@echo "Building simulation (top=$(1))..."
+	@$(VERILATOR) $(VFLAGS) --build \
+		--top-module $(1) \
+		--exe $(TB_MAIN) \
+		-CFLAGS -DTOP_CLASS=V$(1) \
+		-Mdir $(VOUTPUT) \
+		$(SRCS) $(ASSERTS) $(BINDS) $(TESTS) 2>&1 | bash scripts/colorize.sh
+	@echo "Running simulation..."
+	@$(VOUTPUT)/V$(1) 2>&1 | bash scripts/colorize.sh
+endef
+
 sim_fifo:
-	@mkdir -p build
-	@echo "Building simulation..."
-	@$(VERILATOR) $(VFLAGS) --build                   	 \
-		--top-module tb_fifo 							 \
-		--exe $(TB_MAIN)            					 \
-		-Mdir $(VOUTPUT)    						  	 \
-		$(SRCS) $(ASSERTS) $(BINDS) $(TESTS) 2>&1 | bash scripts/colorize.sh 
-	@echo "Running simulation..." 
-	@$(VOUTPUT)/V$(VTOP) 2>&1 | bash scripts/colorize.sh
+	$(call verilate_and_run,tb_fifo)
+
+sim_cpu:
+	$(call verilate_and_run,tb_cpu)
 
 coverage:
 	@mkdir -p $(BUILD_DIR)/coverage/
@@ -71,7 +81,7 @@ coverage:
 	@$(VERILATOR)_coverage $(VOUTPUT)/coverage.dat --write-info $(VOUTPUT)/coverage.info
 	@lcov --summary $(VOUTPUT)/coverage.info
 
-.PHONY: sim_fifo coverage
+.PHONY: sim_fifo sim_cpu coverage
 
 ##########################################
 # FPGA Synthesis & Programming Synthesis #

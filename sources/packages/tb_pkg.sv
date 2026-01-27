@@ -5,6 +5,7 @@
 // Description: Package for testbench utility functions
 //==============================================================================
 package tb_pkg;
+  parameter int CLK_PERIOD = 10;
   parameter int TIMEOUT_CYCLES = 1000;
 
   typedef enum logic [1:0] {
